@@ -7,3 +7,11 @@ set(IMGUI_SOURCE_FILES imgui.cpp
 
 add_library(imgui ${IMGUI_SOURCE_FILES})
 target_include_directories(imgui PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_precompile_headers(imgui PUBLIC <float.h>
+                                       <stdarg.h>
+                                       <stddef.h>
+                                       <string.h>
+                                       <assert.h>
+                                       <ctype.h>
+                                       <stdio.h>
+                                       <stdint.h>)
