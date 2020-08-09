@@ -32,7 +32,7 @@ Index of this file:
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include "imgui.h"
+#include "imgui/imgui.h"
 #ifndef IMGUI_DISABLE
 
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
@@ -2113,8 +2113,6 @@ bool ImGui::DragBehavior(ImGuiID id, ImGuiDataType data_type, void* p_v, float v
     }
     if (g.ActiveId != id)
         return false;
-    if (g.CurrentWindow->DC.ItemFlags & ImGuiItemFlags_ReadOnly)
-        return false;
 
     switch (data_type)
     {
@@ -2278,17 +2276,10 @@ bool ImGui::DragFloatRange2(const char* label, float* v_current_min, float* v_cu
     BeginGroup();
     PushMultiItemsWidths(2, CalcItemWidth());
 
-    float min = (v_min >= v_max) ? -FLT_MAX : v_min;
-    float max = (v_min >= v_max) ? *v_current_max : ImMin(v_max, *v_current_max);
-    if (min == max) { min = FLT_MAX; max = -FLT_MAX; } // Lock edit
-    bool value_changed = DragScalar("##min", ImGuiDataType_Float, v_current_min, v_speed, &min, &max, format, power);
+    bool value_changed = DragFloat("##min", v_current_min, v_speed, (v_min >= v_max) ? -FLT_MAX : v_min, (v_min >= v_max) ? *v_current_max : ImMin(v_max, *v_current_max), format, power);
     PopItemWidth();
     SameLine(0, g.Style.ItemInnerSpacing.x);
-
-    min = (v_min >= v_max) ? *v_current_min : ImMax(v_min, *v_current_min);
-    max = (v_min >= v_max) ? FLT_MAX : v_max;
-    if (min == max) { min = FLT_MAX; max = -FLT_MAX; } // Lock edit
-    value_changed |= DragScalar("##max", ImGuiDataType_Float, v_current_max, v_speed, &min, &max, format_max ? format_max : format, power);
+    value_changed |= DragFloat("##max", v_current_max, v_speed, (v_min >= v_max) ? *v_current_min : ImMax(v_min, *v_current_min), (v_min >= v_max) ? FLT_MAX : v_max, format_max ? format_max : format, power);
     PopItemWidth();
     SameLine(0, g.Style.ItemInnerSpacing.x);
 
@@ -2330,17 +2321,10 @@ bool ImGui::DragIntRange2(const char* label, int* v_current_min, int* v_current_
     BeginGroup();
     PushMultiItemsWidths(2, CalcItemWidth());
 
-    int min = (v_min >= v_max) ? INT_MIN : v_min;
-    int max = (v_min >= v_max) ? *v_current_max : ImMin(v_max, *v_current_max);
-    if (min == max) { min = INT_MAX; max = INT_MIN; } // Lock edit
-    bool value_changed = DragInt("##min", v_current_min, v_speed, min, max, format);
+    bool value_changed = DragInt("##min", v_current_min, v_speed, (v_min >= v_max) ? INT_MIN : v_min, (v_min >= v_max) ? *v_current_max : ImMin(v_max, *v_current_max), format);
     PopItemWidth();
     SameLine(0, g.Style.ItemInnerSpacing.x);
-
-    min = (v_min >= v_max) ? *v_current_min : ImMax(v_min, *v_current_min);
-    max = (v_min >= v_max) ? INT_MAX : v_max;
-    if (min == max) { min = INT_MAX; max = INT_MIN; } // Lock edit
-    value_changed |= DragInt("##max", v_current_max, v_speed, min, max, format_max ? format_max : format);
+    value_changed |= DragInt("##max", v_current_max, v_speed, (v_min >= v_max) ? *v_current_min : ImMax(v_min, *v_current_min), (v_min >= v_max) ? INT_MAX : v_max, format_max ? format_max : format);
     PopItemWidth();
     SameLine(0, g.Style.ItemInnerSpacing.x);
 
@@ -2574,10 +2558,6 @@ bool ImGui::SliderBehaviorT(const ImRect& bb, ImGuiID id, ImGuiDataType data_typ
 // It would be possible to lift that limitation with some work but it doesn't seem to be worth it for sliders.
 bool ImGui::SliderBehavior(const ImRect& bb, ImGuiID id, ImGuiDataType data_type, void* p_v, const void* p_min, const void* p_max, const char* format, float power, ImGuiSliderFlags flags, ImRect* out_grab_bb)
 {
-    ImGuiContext& g = *GImGui;
-    if (g.CurrentWindow->DC.ItemFlags & ImGuiItemFlags_ReadOnly)
-        return false;
-
     switch (data_type)
     {
     case ImGuiDataType_S8:  { ImS32 v32 = (ImS32)*(ImS8*)p_v;  bool r = SliderBehaviorT<ImS32, ImS32, float>(bb, id, ImGuiDataType_S32, &v32, *(const ImS8*)p_min,  *(const ImS8*)p_max,  format, power, flags, out_grab_bb); if (r) *(ImS8*)p_v  = (ImS8)v32;  return r; }
